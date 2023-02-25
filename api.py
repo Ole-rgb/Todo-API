@@ -1,13 +1,13 @@
 from fastapi import FastAPI, Path, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
+from typing import List
 from sqlalchemy.orm import Session
 import datetime
 import json
 
 import models
 from database import engine, SessionLocal 
-
 
 app = FastAPI()
 
@@ -21,8 +21,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
-
 #creates the db-table
 models.Base.metadata.create_all(bind=engine)
 
@@ -35,22 +33,23 @@ def get_db():
        db.close()
 
 #models at todo db-element (no id needed)
-class Todos(BaseModel):
+class Todo(BaseModel):
     name: str = Field(min_length=1)
-    dueTo: datetime
+    dueTo: datetime.datetime
     completed: bool
     description: str = Field(max_length=100)
     importance: int = Field(gt=-1, lt=6)
+    # userID: int #List[int] #the list of users that share the same todo, 
 
 
 @app.get("/")
 def get_todos(db: Session = Depends(get_db)):
-    return db.query(models.Todos).all()
+    return db.query(models.Todo).all()
 
 @app.post("/")
-def create_todo(todo: Todos, db: Session = Depends(get_db)):
+def create_todo(todo: Todo, db: Session = Depends(get_db)):
     #create a todo model and fill it with the information from todo
-    todo_model = models.Todos()
+    todo_model = models.Todo()
     todo_model.name = todo.name
     todo_model.dueTo = todo.dueTo
     todo_model.completed = todo.completed
@@ -64,8 +63,8 @@ def create_todo(todo: Todos, db: Session = Depends(get_db)):
 
 
 @app.put("/")
-def replace_todo(todo_id: int, todo:Todos, db: Session = Depends(get_db)):
-    todo_model = db.query(models.Todos).filter(models.Todos.id == todo_id).first()
+def replace_todo(todo_id: int, todo:Todo, db: Session = Depends(get_db)):
+    todo_model = db.query(models.Todo).filter(models.Todo.id == todo_id).first()
     
     if todo_model is None: 
         raise HTTPException(
@@ -88,7 +87,7 @@ def replace_todo(todo_id: int, todo:Todos, db: Session = Depends(get_db)):
         
 @app.delete("/")
 def delete_todo(todo_id: int, db: Session = Depends(get_db)):
-    todo_model = db.query(models.Todos).filter(models.Todos.id == todo_id).first()
+    todo_model = db.query(models.Todo).filter(models.Todo.id == todo_id).first()
     #check if the todo exists
     if todo_model is None:
         raise HTTPException(
@@ -96,10 +95,6 @@ def delete_todo(todo_id: int, db: Session = Depends(get_db)):
             detail=f"ID {todo_id} does not exist"
         )
     #if it does exist delete all todos with the handed id
-    db.query(models.Todos).filter(models.Todos.id == todo_id).delete()
+    db.query(models.Todo).filter(models.Todo.id == todo_id).delete()
     db.commit()
     return json.loads('{"deleted": true}')
-    
-    
-
-
