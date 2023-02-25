@@ -34,19 +34,29 @@ def get_db():
 
 #models at todo db-element (no id needed)
 class Todo(BaseModel):
-    name: str = Field(min_length=1)
+    name: str = Field(min_length=1, max_length=20)
     dueTo: datetime.datetime
     completed: bool
     description: str = Field(max_length=100)
     importance: int = Field(gt=-1, lt=6)
     # userID: int #List[int] #the list of users that share the same todo, 
 
+class User(BaseModel):
+    username: str = Field(min_length=1, max_length=20)
+    user_email: str #email checking in react (dump but ok?!)
+    user_password: str = Field(min_length=1, max_length=20)
+    todos: List[int]
+    # todos = relationship("Todo", backref="user") #putting a new column on the todo -> a user column
 
-@app.get("/")
+    
+    
+    
+
+@app.get("/todo")
 def get_todos(db: Session = Depends(get_db)):
     return db.query(models.Todo).all()
 
-@app.post("/")
+@app.post("/todo")
 def create_todo(todo: Todo, db: Session = Depends(get_db)):
     #create a todo model and fill it with the information from todo
     todo_model = models.Todo()
@@ -62,7 +72,7 @@ def create_todo(todo: Todo, db: Session = Depends(get_db)):
     return todo
 
 
-@app.put("/")
+@app.put("/todo")
 def replace_todo(todo_id: int, todo:Todo, db: Session = Depends(get_db)):
     todo_model = db.query(models.Todo).filter(models.Todo.id == todo_id).first()
     
@@ -85,7 +95,7 @@ def replace_todo(todo_id: int, todo:Todo, db: Session = Depends(get_db)):
     return todo
     
         
-@app.delete("/")
+@app.delete("/todo")
 def delete_todo(todo_id: int, db: Session = Depends(get_db)):
     todo_model = db.query(models.Todo).filter(models.Todo.id == todo_id).first()
     #check if the todo exists
