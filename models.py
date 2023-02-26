@@ -9,7 +9,7 @@ class User(Base):
     
     id = Column(Integer, primary_key=True,index=True)
     username = Column(String,unique=True, nullable=False)
-    user_email=Column(String, nullable=False)
+    # user_email=Column(String, nullable=False)
     user_password = Column(Integer, nullable=False)
     
     todos = relationship("Todo", back_populates="owner")

@@ -25,7 +25,7 @@ class Todo(TodoBase):
 #elements that will be the same reading and writing (password will be hashed, aka. not the same)
 class UserBase(BaseModel):
     username: str 
-    user_email: str                                         
+    # user_email: str                                         
     
 #for security the pasword is not in the Basemodel
 class UserCreate(UserBase):
