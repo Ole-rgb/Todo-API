@@ -4,3 +4,5 @@
 #ignore the cached files
 __pycache__
 
+#dont push .env
+.env
