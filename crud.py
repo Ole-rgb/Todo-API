@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 
 import models, schemas
 import auth.jwt_handler as JWTHandler
+import bcrypt
 
 #gets all users
 def get_users(db:Session):
@@ -20,7 +21,8 @@ def get_user_by_username(username: str, db: Session):
 #creates a user
 def create_user(user:schemas.UserCreate, db: Session):
     if db.query(models.User).filter(models.User.username == user.username).first() is None:
-        db_user = models.User(username= user.username, user_password=user.user_password)
+        hashed_password = bcrypt.hashpw(user.user_password.encode("utf-8"), bcrypt.gensalt())
+        db_user = models.User(username= user.username, hashed_password=hashed_password)
         db.add(db_user)
         db.commit()
         db.refresh(db_user)
@@ -69,11 +71,10 @@ def delete_user_todo(user_id:int, todo_id:int, db:Session):
     return None
 
 
-def user_exists(user:schemas.UserCreate, db:Session):
+def user_with_password_exists(user:schemas.UserCreate, db:Session):
     db_user = db.query(models.User).filter(models.User.username == user.username).first()
     if db_user:
-        if db_user.user_password == user.user_password:
-            return True
+        return bcrypt.checkpw(user.user_password.encode("utf-8"), db_user.hashed_password)
     return False
 
 
@@ -82,4 +83,3 @@ def get_id_from_token(token:str,db:Session):
     username = decoded_token["username"]
     user_id = get_user_by_username(username=username,db=db).id
     return user_id
-        

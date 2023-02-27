@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import Field
 from sqlalchemy.orm import Session
 from typing import List, Union
+import bcrypt
 
 import models, schemas, crud
 from database import engine, SessionLocal 
@@ -97,7 +98,7 @@ def create_user(user:schemas.UserCreate,db:Session=Depends(get_db)):
 #LOGIN
 @app.post("/auth", response_model={}, tags=["Login"])
 def login_user(user:schemas.UserLogin, db:Session=Depends(get_db)):
-    if crud.user_exists(user, db):
+    if crud.user_with_password_exists(user, db):
         return JWTHandler.signJWT(user.username) #if the user exists, create a Token and return it   
     raise HTTPException(status_code=401, detail="Invalid login details!")
     #TODO return a scheme.User with token and id ?
