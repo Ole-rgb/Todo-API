@@ -21,7 +21,6 @@ class Todo(TodoBase):
         orm_mode = True
 
 
-
 #elements that will be the same reading and writing (password will be hashed, aka. not the same)
 class UserBase(BaseModel):
     username: str 
@@ -31,6 +30,11 @@ class UserBase(BaseModel):
 class UserCreate(UserBase):
     user_password: str 
 
+#only created for naming (dont want to use a userCreate to log in)
+class UserLogin(UserBase):
+    user_password: str 
+
+
 #for reading from the api (pw excluded!)
 class User(UserBase):
     id: int
@@ -39,4 +43,6 @@ class User(UserBase):
     class Config:
         orm_mode = True
 
-
+#represents the accessToken
+class Token(BaseModel):
+    token: str
